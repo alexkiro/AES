@@ -21,7 +21,7 @@ public class State {
         return new WPoly(state[12+x],state[8+x],state[4+x], state[x]);
     }
     
-    public void wordAsCollumn(WPoly w, int x){
+    public void wordToCollumn(WPoly w, int x){
         state[12+x] = w.x3.poly;
         state[8+x] = w.x2.poly;
         state[4+x] = w.x1.poly;

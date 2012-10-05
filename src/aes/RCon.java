@@ -16,12 +16,12 @@ public class RCon {
         
     
     private RCon() {
-        rcon.add(new WPoly(0x1, 0x0, 0x0, 0x0));
+        rcon.add(new WPoly(0x0, 0x0, 0x0, 0x1));
         BinPoly p = new BinPoly(0x2);
-        rcon.add(new WPoly(0x2, 0x0, 0x0, 0x0));
+        rcon.add(new WPoly(0x0, 0x0, 0x0, 0x2));
         for (int i = 2; i < 10; i++) {
             p = p.multiply(new BinPoly(0x2));
-            WPoly temp = new WPoly(p.poly, 0, 0, 0);
+            WPoly temp = new WPoly(0, 0, 0, p.poly);
             rcon.add(temp);
             //temp.debug();
         }

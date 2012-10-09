@@ -16,6 +16,9 @@ public class Aes {
     public Aes (State cipherKey){
         expandKeys(cipherKey);
     }
+    public Aes (String cipherKey){
+        expandKeys(AesParser.getStateFromText(cipherKey.substring(0,8)));
+    }
     
     public String encryptText(String text){
         State[] stateBlock = AesParser.getStateBlocks(text);
@@ -42,26 +45,14 @@ public class Aes {
             0xfa, 0x54, 0xa3, 0x6c,
             0xfe, 0x2c, 0x39, 0x76,
             0x17, 0xb1, 0x39, 0x05};
-        int[] key = {0x2b, 0x28, 0xab, 0x09,
-            0x7e, 0xae, 0xf7, 0xcf,
-            0x15, 0xd2, 0x15, 0x4f,
-            0x16, 0xa6, 0x88, 0x3c};
+        
         int[] pt = {0x32, 0x88, 0x31, 0xe0,
             0x43, 0x5a, 0x31, 0x37,
             0xf6, 0x30, 0x98, 0x07,
             0xa8, 0x8d, 0xa2, 0x34};
-
-        State cipherKey = new State(key);
-        
-        char ch = '0';
-        int i = (int) ch;
-        System.err.println("i = " + Integer.toHexString(i));
-
-        Aes aes  = new Aes(cipherKey);
-        String encryptText = aes.encryptText("12345678");
-        System.err.println("encryptText = " + encryptText);
-        String decryptText = aes.decryptText(encryptText);
-        System.err.println("decryptText = " + decryptText);
+       
+        View.main(null);
+       
     }
     
     private void expandKeys(State key){

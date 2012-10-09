@@ -4,27 +4,36 @@
  */
 package aes;
 
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
-
 /**
  *
  * @author kiro
  */
-public class Aes extends Application {
+public class Aes {
+    
+    private State [] keys;
+    
 
-    @Override
-    public void start(Stage primaryStage) {
-
-        StackPane root = new StackPane();
-
-        Scene scene = new Scene(root, 300, 250);
-
-        primaryStage.setTitle("Aes");
-        primaryStage.setScene(scene);
-        //primaryStage.show();
+    public Aes (State cipherKey){
+        expandKeys(cipherKey);
+    }
+    
+    public String encryptText(String text){
+        State[] stateBlock = AesParser.getStateBlocks(text);
+        for (State state : stateBlock) {              
+            encryptState(state);
+        }
+        return AesParser.getStringFromState(stateBlock);
+    }
+    
+    public String decryptText(String text){
+        State[] stateBlock = AesParser.getStateBlocks(text);
+        for (State state : stateBlock) {           
+            decryptState(state);
+        }
+        return AesParser.getStringFromState(stateBlock);
+    }
+   
+    public static void main(String [] args) {        
         int[] ss = {0xD4, 0xE0, 0xb8, 0x1e,
             0xbf, 0xb4, 0x41, 0x27,
             0x5d, 0x52, 0x11, 0x98,
@@ -41,32 +50,57 @@ public class Aes extends Application {
             0x43, 0x5a, 0x31, 0x37,
             0xf6, 0x30, 0x98, 0x07,
             0xa8, 0x8d, 0xa2, 0x34};
-        State plainText = new State(pt);
-        System.err.println("plainText = " + plainText);
+
         State cipherKey = new State(key);
-        System.err.println("cipherKey = " + cipherKey);
-        encrypt(plainText, cipherKey);
-        System.err.println("cipherText = " + plainText);
+        
+        char ch = '0';
+        int i = (int) ch;
+        System.err.println("i = " + Integer.toHexString(i));
 
-
+        Aes aes  = new Aes(cipherKey);
+        String encryptText = aes.encryptText("12345678");
+        System.err.println("encryptText = " + encryptText);
+        String decryptText = aes.decryptText(encryptText);
+        System.err.println("decryptText = " + decryptText);
+    }
+    
+    private void expandKeys(State key){
+        keys = new State[11];
+        keys[0] = key;
+        for (int i = 1; i < 11; i++) {
+            keys[i] = getRoundKey(keys[i-1], i-1);
+        }
     }
 
-    public void encrypt(State state, State key) {
-        addRoundKey(state, key);
+    private void encryptState(State state) {
+        addRoundKey(state, keys[0]);
         for (int i = 0; i < 9; i++) {
-            key = getRoundKey(key, i);
             subBytes(state);
             shiftRows(state);
             mixColumns(state);
-            addRoundKey(state, key);
+            addRoundKey(state, keys[i+1]);
         }
-        key = getRoundKey(key, 9);
         subBytes(state);
         shiftRows(state);
-        addRoundKey(state, key);
+        addRoundKey(state, keys[10]);
+    }
+    
+    private void decryptState(State state){
+        addRoundKey(state, keys[10]);
+        invShiftRows(state);
+        invSubBytes(state);
+        
+        for (int i = 8; i > -1; i--) {
+            addRoundKey(state, keys[i+1]);
+            invMixColumns(state);
+            invShiftRows(state);
+            invSubBytes(state);      
+        }       
+                
+        addRoundKey(state, keys[0]);
     }
 
-    public State getRoundKey(State prevKey, int round) {
+    private State getRoundKey(State prevKey, int round) {
         State roundKey = new State();
         WPoly word = prevKey.collumnAsWord(3);
         word = rotWord(word);
@@ -79,15 +113,15 @@ public class Aes extends Application {
 
     }
 
-    public WPoly applyRCon(WPoly w1, WPoly w2, int round) {
+    private WPoly applyRCon(WPoly w1, WPoly w2, int round) {
         return w1.addTo(w2).addTo(RCon.getInstance().rcon.get(round));
     }
 
-    public WPoly rotWord(WPoly word) {
+    private WPoly rotWord(WPoly word) {
         return word.multiply(new WPoly(1, 0, 0, 0));
     }
 
-    public void addRoundKey(State s, State key) {
+    private void addRoundKey(State s, State key) {
         for (int i = 0; i < 4; i++) {
             WPoly word = s.collumnAsWord(i);
             WPoly other = key.collumnAsWord(i);
@@ -96,8 +130,17 @@ public class Aes extends Application {
         }
     }
 
-    public void mixColumns(State s) {
-        WPoly other = new WPoly(3, 1, 1, 2); //fixed polynomial
+    private void mixColumns(State s) {
+        WPoly other = new WPoly(0x03, 0x01, 0x01, 0x02); //fixed polynomial
+        for (int i = 0; i < 4; i++) {
+            WPoly word = s.collumnAsWord(i);
+            WPoly mixedWord = word.multiply(other); //multiply modulo x^4 + 1
+            s.wordToCollumn(mixedWord, i);
+        }
+    }
+    
+    private void invMixColumns(State s) {
+        WPoly other = new WPoly(0x0b, 0x0d, 0x09, 0x0e); //fixed polynomial
         for (int i = 0; i < 4; i++) {
             WPoly word = s.collumnAsWord(i);
             WPoly mixedWord = word.multiply(other); //multiply modulo x^4 + 1
@@ -105,7 +148,7 @@ public class Aes extends Application {
         }
     }
 
-    public void shiftRows(State s) {
+    private void shiftRows(State s) {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < i; j++) {
                 int rowHead = s.state[i * 4];
@@ -116,8 +159,20 @@ public class Aes extends Application {
             }
         }
     }
+    
+    private void invShiftRows(State s) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < i; j++) {
+                int rowTail = s.state[i * 4 + 3];
+                for (int k = 2; k > -1; k--) {
+                    s.state[i * 4 + k + 1] = s.state[i * 4 + k ];
+                }
+                s.state[i * 4] = rowTail;
+            }
+        }
+    }
 
-    public void subBytes(State s) {
+    private void subBytes(State s) {
         for (int i = 0; i < 16; i++) {
             int si = s.state[i];
             int x = (si & 0xf0) >> 4;
@@ -125,8 +180,17 @@ public class Aes extends Application {
             s.state[i] = SBox.getInstance().apply(x, y);
         }
     }
+    
+    private void invSubBytes(State s) {
+        for (int i = 0; i < 16; i++) {
+            int si = s.state[i];
+            int x = (si & 0xf0) >> 4;
+            int y = (si & 0x0f);
+            s.state[i] = SBox.getInstance().invApply(x, y);
+        }
+    }
 
-    public void subBytes(WPoly word) {
+    private void subBytes(WPoly word) {
         int x = (word.x0.poly & 0xf0) >> 4;
         int y = (word.x0.poly & 0x0f);
         word.x0.poly = SBox.getInstance().apply(x, y);
@@ -141,7 +205,4 @@ public class Aes extends Application {
         word.x3.poly = SBox.getInstance().apply(x, y);
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
 }

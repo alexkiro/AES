@@ -8,7 +8,7 @@ public class WordPoly {
 
     BinPoly x3, x2, x1, x0;
 
-    public WordPoly(int a3, int a2, int a1, int a0) {
+    public WordPoly(int a0, int a1, int a2, int a3) {
         x3 = new BinPoly(a3);
         x2 = new BinPoly(a2);
         x1 = new BinPoly(a1);
@@ -22,13 +22,8 @@ public class WordPoly {
         x0 = new BinPoly(0);
     }
     
-    public WordPoly copy(){
-        return new WordPoly(x3.poly, x2.poly, x1.poly, x0.poly);
-    }
-    
-    
 
-    public WordPoly(BinPoly a3, BinPoly a2, BinPoly a1, BinPoly a0) {
+    public WordPoly(BinPoly a0, BinPoly a1, BinPoly a2, BinPoly a3) {
         x3 = a3;
         x2 = a2;
         x1 = a1;
@@ -36,10 +31,10 @@ public class WordPoly {
     }
 
     public WordPoly addTo(WordPoly other) {
-        return new WordPoly(this.x3.addTo(other.x3),
-                this.x2.addTo(other.x2),
+        return new WordPoly(this.x0.addTo(other.x0),
                 this.x1.addTo(other.x1),
-                this.x0.addTo(other.x0));
+                this.x2.addTo(other.x2),
+                this.x3.addTo(other.x3));
 
     }
 
@@ -60,7 +55,7 @@ public class WordPoly {
                 .addTo(this.x3.multiply(other.x1))
                 .addTo(this.x2.multiply(other.x2))
                 .addTo(this.x1.multiply(other.x3));
-        return new WordPoly(d3, d2, d1, d0);
+        return new WordPoly(d0, d1, d2, d3);
     }
 
     public void debug() {
@@ -70,7 +65,7 @@ public class WordPoly {
 
     @Override
     public String toString() {
-        return "WordPoly{" + Integer.toHexString(x3.poly) + Integer.toHexString(x2.poly)
-                + Integer.toHexString(x1.poly) + Integer.toHexString(x0.poly) + '}';
+        return Integer.toHexString(x0.poly) + Integer.toHexString(x1.poly)
+                + Integer.toHexString(x2.poly) + Integer.toHexString(x3.poly);
     }
 }

@@ -4,6 +4,8 @@
  */
 package aes;
 
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author kiro
@@ -13,8 +15,51 @@ public class View extends javax.swing.JFrame {
     /**
      * Creates new form View
      */
-    public View() {
+    public View() {    
         initComponents();
+        keyInputGroup.add(unicodeRadio);
+        keyInputGroup.add(hexaRadio);
+        keyInputGroup.setSelected(unicodeRadio.getModel(), true);
+    }
+
+    public String getKeyString() {
+        String text = keyText.getText();
+        if (keyInputGroup.isSelected(unicodeRadio.getModel())) {
+            return text;
+        } else {
+            return text.replaceAll("\\s", "");
+        }
+    }
+    
+    public void fillDetails(Aes aes){
+        String text = "";
+        text += aes.getKeyExpansion();
+        detailsText.setText(text);
+    }
+
+    public boolean checkKey() {
+        String key = getKeyString();
+        int n = key.length();
+        if (keyInputGroup.isSelected(unicodeRadio.getModel())) {
+            if ((n == 8) || (n == 12) || (n == 16)) {
+                return true;
+            } else {
+                JOptionPane.showMessageDialog(this, "Unicode keys must be of 8,12 or 16 charcaters long");
+                return false;
+            }
+        } else {
+            if (key.matches("[0-9a-fA-F]+")) {
+                if ((n == 32) || (n == 48) || (n == 64)) {
+                    return true;
+                } else {
+                    JOptionPane.showMessageDialog(this, "Hexadecimal keys must be of 32,48 or 64 charcaters long");
+                    return false;
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Illegal characters in key: \n " + key);
+                return false;
+            }
+        }
     }
 
     /**
@@ -26,17 +71,24 @@ public class View extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        keyInputGroup = new javax.swing.ButtonGroup();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         inputText = new javax.swing.JTextArea();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        keyText = new javax.swing.JTextField();
         jScrollPane2 = new javax.swing.JScrollPane();
         outputText = new javax.swing.JTextArea();
         jLabel3 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
+        unicodeRadio = new javax.swing.JRadioButton();
+        hexaRadio = new javax.swing.JRadioButton();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        keyText = new javax.swing.JTextArea();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        detailsText = new javax.swing.JTextArea();
+        jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("AES");
@@ -64,8 +116,6 @@ public class View extends javax.swing.JFrame {
 
         jLabel2.setText("Key");
 
-        keyText.setColumns(8);
-
         outputText.setColumns(20);
         outputText.setLineWrap(true);
         outputText.setRows(5);
@@ -80,51 +130,87 @@ public class View extends javax.swing.JFrame {
             }
         });
 
+        unicodeRadio.setText("Unicode Text");
+
+        hexaRadio.setText("Hexadecimal input");
+        hexaRadio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hexaRadioActionPerformed(evt);
+            }
+        });
+
+        keyText.setColumns(20);
+        keyText.setLineWrap(true);
+        keyText.setRows(5);
+        jScrollPane3.setViewportView(keyText);
+
+        detailsText.setColumns(20);
+        detailsText.setLineWrap(true);
+        detailsText.setRows(5);
+        jScrollPane4.setViewportView(detailsText);
+
+        jLabel4.setText("Details:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(unicodeRadio)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
+                        .addComponent(hexaRadio))
+                    .addComponent(jScrollPane3)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jButton1)
-                                .addGap(18, 18, 18)
+                                .addGap(47, 47, 47)
                                 .addComponent(jButton2)
-                                .addGap(18, 18, 18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jLabel1)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(keyText))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))
+                            .addComponent(jLabel2)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))
                         .addComponent(jLabel3)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(4, 4, 4)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(keyText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2)
-                    .addComponent(jButton3))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(hexaRadio)
+                            .addComponent(unicodeRadio))
+                        .addGap(7, 7, 7)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButton1)
+                            .addComponent(jButton2)
+                            .addComponent(jButton3)))
+                    .addComponent(jScrollPane4))
                 .addContainerGap())
         );
 
@@ -132,13 +218,21 @@ public class View extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        Aes aes = new Aes(keyText.getText());
-        outputText.setText(aes.encryptText(inputText.getText()));
+        String key = getKeyString();
+        if (checkKey()) {
+            Aes aes = new Aes(key,keyInputGroup.isSelected(unicodeRadio.getModel()));
+            outputText.setText(aes.encryptText(inputText.getText()));
+            fillDetails(aes);
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Aes aes = new Aes(keyText.getText());
-        outputText.setText(aes.decryptText(inputText.getText()));        
+        String key = getKeyString();
+        if (checkKey()) {
+            Aes aes = new Aes(key,keyInputGroup.isSelected(unicodeRadio.getModel()));
+            outputText.setText(aes.decryptText(inputText.getText()));
+            fillDetails(aes);
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
@@ -146,6 +240,10 @@ public class View extends javax.swing.JFrame {
         inputText.setText(outputText.getText());
         outputText.setText(text);
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void hexaRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hexaRadioActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_hexaRadioActionPerformed
 
     /**
      * @param args the command line arguments
@@ -183,6 +281,8 @@ public class View extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea detailsText;
+    private javax.swing.JRadioButton hexaRadio;
     private javax.swing.JTextArea inputText;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
@@ -190,9 +290,14 @@ public class View extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextField keyText;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.ButtonGroup keyInputGroup;
+    private javax.swing.JTextArea keyText;
     private javax.swing.JTextArea outputText;
+    private javax.swing.JRadioButton unicodeRadio;
     // End of variables declaration//GEN-END:variables
 }

@@ -12,16 +12,16 @@ import java.util.ArrayList;
  */
 public class RCon {
     
-    public ArrayList<WPoly> rcon = new ArrayList<>();
+    public ArrayList<WordPoly> rcon = new ArrayList<>();
         
     
     private RCon() {
-        rcon.add(new WPoly(0x0, 0x0, 0x0, 0x1));
+        rcon.add(new WordPoly(0x0, 0x0, 0x0, 0x1));
         BinPoly p = new BinPoly(0x2);
-        rcon.add(new WPoly(0x0, 0x0, 0x0, 0x2));
-        for (int i = 2; i < 10; i++) {
+        rcon.add(new WordPoly(0x0, 0x0, 0x0, 0x2));
+        for (int i = 2; i < 14; i++) {
             p = p.multiply(new BinPoly(0x2));
-            WPoly temp = new WPoly(0, 0, 0, p.poly);
+            WordPoly temp = new WordPoly(0, 0, 0, p.poly);
             rcon.add(temp);
             //temp.debug();
         }

@@ -10,14 +10,10 @@ package aes;
  */
 public class Aes {
     
-    private State [] keys;
+    private Key keys;
     
-
-    public Aes (State cipherKey){
-        expandKeys(cipherKey);
-    }
     public Aes (String cipherKey){
-        expandKeys(AesParser.getStateFromText(cipherKey.substring(0,8)));
+        keys = new Key(cipherKey);
     }
     
     public String encryptText(String text){
@@ -36,105 +32,62 @@ public class Aes {
         return AesParser.getStringFromState(stateBlock);
     }
    
-    public static void main(String [] args) {        
-        int[] ss = {0xD4, 0xE0, 0xb8, 0x1e,
-            0xbf, 0xb4, 0x41, 0x27,
-            0x5d, 0x52, 0x11, 0x98,
-            0x30, 0xae, 0xf1, 0xe5};
-        int[] kk = {0xa0, 0x88, 0x23, 0x2a,
-            0xfa, 0x54, 0xa3, 0x6c,
-            0xfe, 0x2c, 0x39, 0x76,
-            0x17, 0xb1, 0x39, 0x05};
-        
-        int[] pt = {0x32, 0x88, 0x31, 0xe0,
-            0x43, 0x5a, 0x31, 0x37,
-            0xf6, 0x30, 0x98, 0x07,
-            0xa8, 0x8d, 0xa2, 0x34};
-       
+    public static void main(String [] args) {             
         View.main(null);
        
     }
-    
-    private void expandKeys(State key){
-        keys = new State[11];
-        keys[0] = key;
-        for (int i = 1; i < 11; i++) {
-            keys[i] = getRoundKey(keys[i-1], i-1);
-        }
-    }
 
     private void encryptState(State state) {
-        addRoundKey(state, keys[0]);
-        for (int i = 0; i < 9; i++) {
+        addRoundKey(state, keys.getRoundKey(0));
+        for (int i = 0; i < keys.getNr() - 1; i++) {
             subBytes(state);
             shiftRows(state);
             mixColumns(state);
-            addRoundKey(state, keys[i+1]);
+            addRoundKey(state, keys.getRoundKey(i+1));
         }
         subBytes(state);
         shiftRows(state);
-        addRoundKey(state, keys[10]);
+        addRoundKey(state, keys.getRoundKey(keys.getNr()));
     }
     
     private void decryptState(State state){
-        addRoundKey(state, keys[10]);
+        addRoundKey(state, keys.getRoundKey(keys.getNr()));
         invShiftRows(state);
         invSubBytes(state);
         
-        for (int i = 8; i > -1; i--) {
-            addRoundKey(state, keys[i+1]);
+        for (int i = keys.getNr() - 2; i > -1; i--) {
+            addRoundKey(state,keys.getRoundKey(i+1));
             invMixColumns(state);
             invShiftRows(state);
             invSubBytes(state);      
         }       
                 
-        addRoundKey(state, keys[0]);
-    }
-
-    private State getRoundKey(State prevKey, int round) {
-        State roundKey = new State();
-        WPoly word = prevKey.collumnAsWord(3);
-        word = rotWord(word);
-        subBytes(word);
-        roundKey.wordToCollumn(applyRCon(prevKey.collumnAsWord(0), word, round), 0);
-        for (int i = 1; i < 4; i++) {
-            roundKey.wordToCollumn(prevKey.collumnAsWord(i).addTo(roundKey.collumnAsWord(i - 1)), i);
-        }
-        return roundKey;
-
-    }
-
-    private WPoly applyRCon(WPoly w1, WPoly w2, int round) {
-        return w1.addTo(w2).addTo(RCon.getInstance().rcon.get(round));
-    }
-
-    private WPoly rotWord(WPoly word) {
-        return word.multiply(new WPoly(1, 0, 0, 0));
+        addRoundKey(state, keys.getRoundKey(0));
     }
 
     private void addRoundKey(State s, State key) {
         for (int i = 0; i < 4; i++) {
-            WPoly word = s.collumnAsWord(i);
-            WPoly other = key.collumnAsWord(i);
-            WPoly roundWord = word.addTo(other);
+            WordPoly word = s.collumnAsWord(i);
+            WordPoly other = key.collumnAsWord(i);
+            WordPoly roundWord = word.addTo(other);
             s.wordToCollumn(roundWord, i);
         }
     }
 
     private void mixColumns(State s) {
-        WPoly other = new WPoly(0x03, 0x01, 0x01, 0x02); //fixed polynomial
+        WordPoly other = new WordPoly(0x03, 0x01, 0x01, 0x02); //fixed polynomial
         for (int i = 0; i < 4; i++) {
-            WPoly word = s.collumnAsWord(i);
-            WPoly mixedWord = word.multiply(other); //multiply modulo x^4 + 1
+            WordPoly word = s.collumnAsWord(i);
+            WordPoly mixedWord = word.multiply(other); //multiply modulo x^4 + 1
             s.wordToCollumn(mixedWord, i);
         }
     }
     
     private void invMixColumns(State s) {
-        WPoly other = new WPoly(0x0b, 0x0d, 0x09, 0x0e); //fixed polynomial
+        WordPoly other = new WordPoly(0x0b, 0x0d, 0x09, 0x0e); //fixed polynomial
         for (int i = 0; i < 4; i++) {
-            WPoly word = s.collumnAsWord(i);
-            WPoly mixedWord = word.multiply(other); //multiply modulo x^4 + 1
+            WordPoly word = s.collumnAsWord(i);
+            WordPoly mixedWord = word.multiply(other); //multiply modulo x^4 + 1
             s.wordToCollumn(mixedWord, i);
         }
     }
@@ -181,19 +134,6 @@ public class Aes {
         }
     }
 
-    private void subBytes(WPoly word) {
-        int x = (word.x0.poly & 0xf0) >> 4;
-        int y = (word.x0.poly & 0x0f);
-        word.x0.poly = SBox.getInstance().apply(x, y);
-        x = (word.x1.poly & 0xf0) >> 4;
-        y = (word.x1.poly & 0x0f);
-        word.x1.poly = SBox.getInstance().apply(x, y);
-        x = (word.x2.poly & 0xf0) >> 4;
-        y = (word.x2.poly & 0x0f);
-        word.x2.poly = SBox.getInstance().apply(x, y);
-        x = (word.x3.poly & 0xf0) >> 4;
-        y = (word.x3.poly & 0x0f);
-        word.x3.poly = SBox.getInstance().apply(x, y);
-    }
+   
 
 }

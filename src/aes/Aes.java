@@ -12,6 +12,11 @@ public class Aes {
 
     private Key keys;
 
+    //entry point
+    public static void main(String[] args) {
+        View.main(null);
+    }
+
     public Aes(String cipherKey, boolean unicodeKey) {
         keys = new Key(cipherKey, unicodeKey);
     }
@@ -34,11 +39,6 @@ public class Aes {
             decryptState(state);
         }
         return AesParser.getStringFromState(stateBlock);
-    }
-
-    public static void main(String[] args) {
-        View.main(null);
-
     }
 
     private void encryptState(State state) {
